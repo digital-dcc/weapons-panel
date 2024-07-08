@@ -1,0 +1,1 @@
+import "@digital-dcc/equipped-weapon";
