@@ -1,7 +1,7 @@
 {
   "name": "@digital-dcc/weapons-panel",
   "private": false,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A simple web component",
   "main": "weapons-panel.js",
   "module": "weapons-panel.js",
