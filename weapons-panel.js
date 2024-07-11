@@ -14,7 +14,7 @@ function kebabToCamel(kebabStr) {
 }
 
 function camelToKebab(camelStr = '') {
-	return camelStr?.replace(/([a-z])([A-Z])/g, '$1-$2')?.toLowerCase();
+  return camelStr?.replace(/([a-z])([A-Z])/g, '$1-$2')?.toLowerCase();
 }
 
 export class WeaponsPanel extends LitElement {
@@ -25,6 +25,10 @@ export class WeaponsPanel extends LitElement {
   static get properties() {
     return {
       // attributes
+      theme: {
+        type: String,
+        reflect: true,
+      },
       strength: {
         type: Number,
         required: true,
@@ -44,11 +48,14 @@ export class WeaponsPanel extends LitElement {
       oponentEntangled: {state: true},
       oponentHelpless: {state: true},
       oponentProne: {state: true},
+
+      disabled: {type: Boolean, reflect: true},
     };
   }
 
   constructor() {
     super();
+    this.theme = null;
     this.attackerInvisible = false;
     this.attackerOnHigherGround = false;
     this.attackerSqueezing = false;
@@ -63,56 +70,74 @@ export class WeaponsPanel extends LitElement {
     this.opponentEntangled = false;
     this.opponentHelpless = false;
     this.opponentProne = false;
+    this.disabled = true;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+
+    const userPrefersDark =
+      window.matchMedia &&
+      window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (!this.theme) {
+      if (userPrefersDark) {
+        this.theme = 'dark';
+      } else {
+        this.theme = 'light';
+      }
+    }
   }
 
   firstUpdated() {
-    // super.connectedCallback();
+    this.handleSlotChanged();
+  }
 
-		// whenever an equipped weapon is added or removed from the panel, we need to set the checkbox values
-		// on the new equipped weapon
+  handleSlotChanged() {
     const slot = this.shadowRoot?.querySelector('slot');
-    slot?.addEventListener('slotchange', () => {
-      const assignedNodes = slot
-        ?.assignedNodes()
-        .filter((node) => node.nodeName === 'EQUIPPED-WEAPON');
-
-      // set/unset properties on the child equipped-weapon elements based on the set checkbox values
-      for (const node of assignedNodes || []) {
-        for (const prop of [
-          'attackerInvisible',
-          'attackerOnHigherGround',
-          'attackerSqueezing',
-          'attackerEntangled',
-          'attackerUntrained',
-          'attackerFiringIntoMelee',
-          'attackerMounted',
-          'attackerCharging',
-          'attackerSneakAttacking',
-          'opponentBehindCover',
-          'opponentBlinded',
-          'opponentEntangled',
-          'opponentHelpless',
-          'opponentProne',
-        ]) {
-          if (this[prop]) {
-            // @ts-ignore
-            node.setAttribute(camelToKebab(prop), '');
-          } else {
-            // @ts-ignore
-            node.removeAttribute(this[prop]);
-          }
+    const assignedNodes = slot
+      ?.assignedNodes()
+      .filter((node) => node.nodeName === 'EQUIPPED-WEAPON');
+    this.disabled = assignedNodes?.length === 0;
+    // set/unset properties on the child equipped-weapon elements based on the set checkbox values
+    for (const node of assignedNodes || []) {
+      // @ts-ignore
+      node.setAttribute('theme', this.theme);
+      for (const prop of [
+        'attackerInvisible',
+        'attackerOnHigherGround',
+        'attackerSqueezing',
+        'attackerEntangled',
+        'attackerUntrained',
+        'attackerFiringIntoMelee',
+        'attackerMounted',
+        'attackerCharging',
+        'attackerSneakAttacking',
+        'opponentBehindCover',
+        'opponentBlinded',
+        'opponentEntangled',
+        'opponentHelpless',
+        'opponentProne',
+      ]) {
+        if (this[prop]) {
+          // @ts-ignore
+          node.setAttribute(camelToKebab(prop), '');
+        } else {
+          // @ts-ignore
+          node.removeAttribute(this[prop]);
         }
       }
-    });
+    }
   }
 
   render() {
     return html`
       <div class="wrapper" part="wrapper">
-        <h1 part="title">Weapons</h1>
-        <slot></slot>
-        <div class="you-are" part="you-are">
-          <h2 part="sub-title">You are...</h2>
+        <h1 class="title" part="title">Weapons</h1>
+        <slot @slotchange="${this.handleSlotChanged}"
+          >You have no weapons currently equipped.</slot
+        >
+        <div class="you-are ${this.disabled ? 'disabled' : ''}" part="you-are">
+          <h2 class="sub-title" part="sub-title">You are...</h2>
           <ul class="checkboxes" part="checkboxes">
             <li>
               <label>
@@ -215,8 +240,11 @@ export class WeaponsPanel extends LitElement {
             </li>
           </ul>
         </div>
-        <div class="your-target-is" part="your-target-is">
-          <h2 part="sub-title">Your target is...</h2>
+        <div
+          class="your-target-is ${this.disabled ? 'disabled' : ''}"
+          part="your-target-is"
+        >
+          <h2 class="sub-title" part="sub-title">Your target is...</h2>
           <ul class="checkboxes" part="checkboxes">
             <li>
               <label>
