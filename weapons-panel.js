@@ -13,8 +13,8 @@ function kebabToCamel(kebabStr) {
   return kebabStr.replace(/-./g, (match) => match[1].toUpperCase());
 }
 
-function camelToKebab(camelStr) {
-	return camelStr.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+function camelToKebab(camelStr = '') {
+	return camelStr?.replace(/([a-z])([A-Z])/g, '$1-$2')?.toLowerCase();
 }
 
 export class WeaponsPanel extends LitElement {
@@ -39,7 +39,7 @@ export class WeaponsPanel extends LitElement {
       charging: {state: true},
       sneakAttacking: {state: true},
 
-      oponentBehindConver: {state: true},
+      oponentBehindCover: {state: true},
       oponentBlinded: {state: true},
       oponentEntangled: {state: true},
       oponentHelpless: {state: true},
@@ -65,8 +65,8 @@ export class WeaponsPanel extends LitElement {
     this.opponentProne = false;
   }
 
-  connectedCallback() {
-    super.connectedCallback();
+  firstUpdated() {
+    // super.connectedCallback();
 
 		// whenever an equipped weapon is added or removed from the panel, we need to set the checkbox values
 		// on the new equipped weapon
@@ -96,7 +96,7 @@ export class WeaponsPanel extends LitElement {
         ]) {
           if (this[prop]) {
             // @ts-ignore
-            node.setAttribute(camelToKebab(this[prop]), '');
+            node.setAttribute(camelToKebab(prop), '');
           } else {
             // @ts-ignore
             node.removeAttribute(this[prop]);
@@ -109,11 +109,11 @@ export class WeaponsPanel extends LitElement {
   render() {
     return html`
       <div class="wrapper" part="wrapper">
-        <h1>Weapons</h1>
+        <h1 part="title">Weapons</h1>
         <slot></slot>
         <div class="you-are" part="you-are">
-          <h2>You are...</h2>
-          <ul class="checkboxes">
+          <h2 part="sub-title">You are...</h2>
+          <ul class="checkboxes" part="checkboxes">
             <li>
               <label>
                 <input
@@ -216,8 +216,8 @@ export class WeaponsPanel extends LitElement {
           </ul>
         </div>
         <div class="your-target-is" part="your-target-is">
-          <h2>Your target is...</h2>
-          <ul class="checkboxes">
+          <h2 part="sub-title">Your target is...</h2>
+          <ul class="checkboxes" part="checkboxes">
             <li>
               <label>
                 <input
